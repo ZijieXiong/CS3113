@@ -80,18 +80,11 @@ void Initialize() {
 
 void ProcessInput() {
 	SDL_Event event;
-	while (gameIsRunning) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
-				gameIsRunning = false;
-			}
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
+			gameIsRunning = false;
 		}
-
-		glClear(GL_COLOR_BUFFER_BIT);
-		SDL_GL_SwapWindow(displayWindow);
 	}
-
-	SDL_Quit();
 }
 
 float lastTicks = 0;

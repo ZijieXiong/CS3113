@@ -115,34 +115,22 @@ void Update() {
 void Render() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	program.SetModelMatrix(playerModelMatrix);
 
-	float player_vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float player_texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, player_vertices);
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
 	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, player_texCoords);
+	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
 	glEnableVertexAttribArray(program.texCoordAttribute);
 
+	program.SetModelMatrix(playerModelMatrix);
 	glBindTexture(GL_TEXTURE_2D, playerTextureID);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	
-	glDisableVertexAttribArray(program.positionAttribute);
-	glDisableVertexAttribArray(program.texCoordAttribute);
-
 	program.SetModelMatrix(hamModelMatrix);
-
-	float ham_vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float ham_texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ham_vertices);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, ham_texCoords);
-	glEnableVertexAttribArray(program.texCoordAttribute);
-
 	glBindTexture(GL_TEXTURE_2D, hamTextureID);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, 6);	
 
 	glDisableVertexAttribArray(program.positionAttribute);
 	glDisableVertexAttribArray(program.texCoordAttribute);

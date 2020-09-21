@@ -89,13 +89,29 @@ void ProcessInput() {
 
 float lastTicks = 0;
 float rotate_z = 0;
-float moving_object = 3;
+float moving_object = 1;
+float distance = 0;
+
+bool is_moving_left = true;
 void Update() {
 	float ticks = (float)SDL_GetTicks() / 1000.0f;
 	float deltaTime = ticks - lastTicks;
 	lastTicks = ticks;
+	
+	if (moving_object < -1) {
+		is_moving_left = false;
+	}
 
-	moving_object -= 1.0f * deltaTime;
+	if (moving_object > 1) {
+		is_moving_left = true;
+	}
+
+	if (is_moving_left) {
+		moving_object -= 2.0f * deltaTime;
+	}
+	else {
+		moving_object += 2.0f * deltaTime;
+	}
 	rotate_z += 45.0f * deltaTime;
 
 	playerModelMatrix = glm::mat4(1.0f);

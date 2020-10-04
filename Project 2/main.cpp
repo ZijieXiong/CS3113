@@ -30,12 +30,45 @@ glm::vec3 right_pad_pos = glm::vec3(5, 0, 0);
 glm::vec3 ball_pos = glm::vec3(0, 0, 0);
 
 glm::vec3 left_pad_mov = glm::vec3(0, 0, 0);
-glm::vec3 right_pad_mov = glm::vec3(1, 0, 0);
-glm::vec3 ball_mov = glm::vec3(0, 0, 0);
+glm::vec3 right_pad_mov = glm::vec3(0, 0, 0);
+glm::vec3 ball_mov = glm::vec3(1, 0, 0);
 
 float pad_speed = 4.0f;
 float ball_speed = 2.0f;
+float lastTicks = 0;
 bool isGameStart = false;
+float pad_width = 1.0f;
+float pad_height = 1.0f;
+float ball_width = 0.5f;
+float ball_height = 0.5f;
+
+bool LeftPadTouched() {
+	float x = fabs(left_pad_pos.x - ball_pos.x) - ((pad_width + ball_width) / 2.0f);
+	float y = fabs(left_pad_pos.y - ball_pos.y) - ((pad_height + ball_height)/ 2.0f);
+	return (x < 0 && y<0);
+}
+
+bool RightPadTouched() {
+	float x = fabs(right_pad_pos.x - ball_pos.x) - ((pad_width + ball_width) / 2.0f);
+	float y = fabs(right_pad_pos.y - ball_pos.y) - ((pad_height + ball_height) / 2.0f);
+	return (x<0 && y<0);
+}
+
+bool UpBoundTouched() {
+	return (ball_pos.y + ball_height / 2.0f) >= 3.75f;
+}
+
+bool BotBoundTouched() {
+	return (ball_pos.y - ball_height / 2.0f) <= -3.75f;
+}
+
+bool LeftBoundTouched() {
+	return (ball_pos.x - ball_width / 2.0f) <= -5.0f;
+}
+
+bool RightBoundTouched() {
+	return (ball_pos.x + ball_width / 2.0f) >= 5.0f;
+}
 
 GLuint LoadTexture(const char* filePath) {
 	int w, h, n;
@@ -108,8 +141,12 @@ void ProcessInput() {
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
 				case SDLK_SPACE:
-					isGameStart = true;
-					right_pad_mov.y = 1.0f;
+					if (!isGameStart) {
+						glm::vec3 left_pad_pos = glm::vec3(-5, 0, 0);
+						glm::vec3 right_pad_pos = glm::vec3(5, 0, 0);
+						ball_pos = glm::vec3(0, 0, 0);
+						isGameStart = true;
+					}
 					break;
 				}
 				break;
@@ -132,27 +169,62 @@ void ProcessInput() {
 	}
 }
 
-float lastTicks = 0;
-float rotate_z = 0;
-float moving_object = 1;
-float distance = 0;
+
 
 bool is_moving_left = true;
 void Update() {
 	float ticks = (float)SDL_GetTicks() / 1000.0f;
 	float deltaTime = ticks - lastTicks;
 	lastTicks = ticks;
-	std::cout << isGameStart;
-	if (isGameStart) {
-		if (glm::length(ball_mov) > 1.0f) {
-			ball_mov = glm::normalize(ball_mov);
-		}
-		ball_pos += ball_mov * ball_speed * deltaTime;
-	}
+
 	
 
-	left_pad_pos += left_pad_mov * pad_speed * deltaTime;
-	right_pad_pos += right_pad_mov * pad_speed * deltaTime;
+	if (isGameStart) {
+		if (RightPadTouched()) {
+			ball_mov.x = -1;
+			if (ball_pos.y < right_pad_pos.y) {
+				ball_mov.y = -1;
+			}
+			else {
+				ball_mov.y = 1;
+			}
+		}
+		if (LeftPadTouched()) {
+			ball_mov.x = 1;
+			if (ball_pos.y < left_pad_pos.y) {
+				ball_mov.y = -1;
+			}
+			else {
+				ball_mov.y = 1;
+			}
+		}
+		if (UpBoundTouched()) {
+			ball_mov.y = -1;
+		}
+		if (BotBoundTouched()) {
+			ball_mov.y = 1;
+		}
+		if (RightBoundTouched() || LeftBoundTouched()) {
+			isGameStart = false;
+		}
+		if (glm::length(ball_mov) > 1.0f) {
+			ball_mov=glm::normalize(ball_mov);
+		}
+		ball_pos += ball_mov * ball_speed * deltaTime;
+		left_pad_pos += left_pad_mov * pad_speed * deltaTime;
+		if (left_pad_pos.y >= 3.75f || left_pad_pos.y <= -3.75f) {
+			left_pad_pos -= left_pad_mov * pad_speed * deltaTime;
+		}
+		right_pad_pos += right_pad_mov * pad_speed * deltaTime;
+		if (right_pad_pos.y >= 3.75f || right_pad_pos.y <= -3.75f) {
+			right_pad_pos -= right_pad_mov * pad_speed * deltaTime;
+		}
+
+	}
+	
+	
+
+	
 
 	LeftPadModelMatrix = glm::mat4(1.0f);
 	LeftPadModelMatrix = glm::translate(LeftPadModelMatrix, left_pad_pos);
@@ -163,7 +235,7 @@ void Update() {
 	RightPadModelMatrix = glm::rotate(RightPadModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	BallModelMatrix = glm::mat4(1.0f);
-	BallModelMatrix = glm::translate(BallModelMatrix, ball_mov);
+	BallModelMatrix = glm::translate(BallModelMatrix, ball_pos);
 	BallModelMatrix = glm::rotate(BallModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 }

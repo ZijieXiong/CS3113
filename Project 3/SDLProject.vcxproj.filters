@@ -21,12 +21,18 @@
     <ClCompile Include="ShaderProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -40,6 +46,15 @@
       <Filter>Source Files</Filter>
     </Image>
     <Image Include="ham.png">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="destination.png">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="ground.png">
+      <Filter>Source Files</Filter>
+    </Image>
+    <Image Include="font1.png">
       <Filter>Source Files</Filter>
     </Image>
   </ItemGroup>

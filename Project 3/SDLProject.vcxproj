@@ -127,18 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Entity.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="Entity.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SDLProject.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="ctg.png" />
+    <Image Include="destination.png" />
+    <Image Include="font1.png" />
+    <Image Include="ground.png" />
     <Image Include="ham.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

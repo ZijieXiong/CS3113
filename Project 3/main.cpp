@@ -5,6 +5,7 @@
 #endif
 
 #include<iostream>
+#include<vector>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "ShaderProgram.h"
@@ -14,6 +15,18 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "Entity.h"
+#define PLATFORM_COUNT 12
+
+
+struct GameState {
+	Entity *player;
+	Entity *platforms;
+	bool gameEnd = false;
+	bool win = true;
+};
+
+GameState state;
 
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
@@ -21,53 +34,58 @@ bool gameIsRunning = true;
 ShaderProgram program;
 glm::mat4 viewMatrix, LeftPadModelMatrix, RightPadModelMatrix, BallModelMatrix, projectionMatrix;
 
-GLuint LeftPadTextureID;
-GLuint RightPadTextureID;
-GLuint BallTextureID;
+GLuint fontTextureID;
 
-glm::vec3 left_pad_pos = glm::vec3(-5, 0, 0);
-glm::vec3 right_pad_pos = glm::vec3(5, 0, 0);
-glm::vec3 ball_pos = glm::vec3(0, 0, 0);
+void DrawText(ShaderProgram* program, GLuint fontTextureID, std::string text,
+	float size, float spacing, glm::vec3 position)
+{
+	float width = 1.0f / 16.0f;
+	float height = 1.0f / 16.0f;
 
-glm::vec3 left_pad_mov = glm::vec3(0, 0, 0);
-glm::vec3 right_pad_mov = glm::vec3(0, 0, 0);
-glm::vec3 ball_mov = glm::vec3(1, 0, 0);
+	std::vector<float> vertices;
+	std::vector<float> texCoords;
 
-float pad_speed = 4.0f;
-float ball_speed = 2.0f;
-float lastTicks = 0;
-bool isGameStart = false;
-float pad_width = 1.0f;
-float pad_height = 1.0f;
-float ball_width = 0.5f;
-float ball_height = 0.5f;
+	for (int i = 0; i < text.size(); i++) {
 
-bool LeftPadTouched() {
-	float x = fabs(left_pad_pos.x - ball_pos.x) - ((pad_width + ball_width) / 2.0f);
-	float y = fabs(left_pad_pos.y - ball_pos.y) - ((pad_height + ball_height)/ 2.0f);
-	return (x < 0 && y<0);
-}
+		int index = (int)text[i];
+		float offset = (size + spacing) * i;
+		float u = (float)(index % 16) / 16.0f;
+		float v = (float)(index / 16) / 16.0f;
+		vertices.insert(vertices.end(), {
+			offset + (-0.5f * size), 0.5f * size,
+			offset + (-0.5f * size), -0.5f * size,
+			offset + (0.5f * size), 0.5f * size,
+			offset + (0.5f * size), -0.5f * size,
+			offset + (0.5f * size), 0.5f * size,
+			offset + (-0.5f * size), -0.5f * size,
+			});
+		texCoords.insert(texCoords.end(), {
+		u, v,
+		u, v + height,
+		u + width, v,
+		u + width, v + height,
+		u + width, v,
+		u, v + height,
+			});
 
-bool RightPadTouched() {
-	float x = fabs(right_pad_pos.x - ball_pos.x) - ((pad_width + ball_width) / 2.0f);
-	float y = fabs(right_pad_pos.y - ball_pos.y) - ((pad_height + ball_height) / 2.0f);
-	return (x<0 && y<0);
-}
+	} // end of for loop
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	modelMatrix = glm::translate(modelMatrix, position);
+	program->SetModelMatrix(modelMatrix);
 
-bool UpBoundTouched() {
-	return (ball_pos.y + ball_height / 2.0f) >= 3.75f;
-}
+	glUseProgram(program->programID);
 
-bool BotBoundTouched() {
-	return (ball_pos.y - ball_height / 2.0f) <= -3.75f;
-}
+	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertices.data());
+	glEnableVertexAttribArray(program->positionAttribute);
 
-bool LeftBoundTouched() {
-	return (ball_pos.x - ball_width / 2.0f) <= -5.0f;
-}
+	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords.data());
+	glEnableVertexAttribArray(program->texCoordAttribute);
 
-bool RightBoundTouched() {
-	return (ball_pos.x + ball_width / 2.0f) >= 5.0f;
+	glBindTexture(GL_TEXTURE_2D, fontTextureID);
+	glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+	glDisableVertexAttribArray(program->positionAttribute);
+	glDisableVertexAttribArray(program->texCoordAttribute);
 }
 
 GLuint LoadTexture(const char* filePath) {
@@ -115,11 +133,38 @@ void Initialize() {
 
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
+	state.player = new Entity();
+	state.player->entityType = PlAYER;
+	state.player->position = glm::vec3(0, 3.3, 0);
+	state.player->acceleration = glm::vec3(0, -0.1, 0);
+	state.player->velocity = glm::vec3(0, 0, 0);
+	state.player->textureID = LoadTexture("ctg.png");
 
-
-	LeftPadTextureID = LoadTexture("ctg.png");
-	RightPadTextureID = LoadTexture("ctg.png");
-	BallTextureID = LoadTexture("ham.png");
+	state.platforms = new Entity[PLATFORM_COUNT];
+	state.platforms[0].position = glm::vec3(-4.5, -3.3, 0);
+	state.platforms[1].position = glm::vec3(-3.5, -3.3, 0);
+	state.platforms[2].position = glm::vec3(-2.5, -3.3, 0);
+	state.platforms[3].position = glm::vec3(-1.5, -3.3, 0);
+	state.platforms[4].position = glm::vec3(-0.5, -3.3, 0);
+	state.platforms[5].position = glm::vec3(0.5, -3.3, 0);
+	state.platforms[6].position = glm::vec3(1.5, -3.3, 0);
+	state.platforms[7].position = glm::vec3(2.5, -3.3, 0);
+	state.platforms[8].position = glm::vec3(3.5, -3.3, 0);
+	state.platforms[9].position = glm::vec3(4.5, -3.3, 0);
+	state.platforms[10].position = glm::vec3(1, 0, 0);
+	state.platforms[11].position = glm::vec3(2, 0, 0);
+	GLuint groundTextureID = LoadTexture("ground.png");
+	for (int i = 0; i < PLATFORM_COUNT; i++) {
+		state.platforms[i].entityType = GROUND;
+		state.platforms[i].textureID = groundTextureID;
+		state.platforms[i].Update(0);
+	}
+	GLuint destTextureID = LoadTexture("destination.png");
+	state.platforms[7].textureID = destTextureID;
+	state.platforms[7].entityType = DESTINATION;
+	state.platforms[8].textureID = destTextureID;
+	state.platforms[8].entityType = DESTINATION;
+	fontTextureID = LoadTexture("font1.png");
 
 	glEnable(GL_BLEND);
 
@@ -127,10 +172,7 @@ void Initialize() {
 }
 
 void ProcessInput() {
-
-	left_pad_mov = glm::vec3(0, 0, 0);
-	right_pad_mov = glm::vec3(0, 0, 0);
-
+	state.player->acceleration.x = 0;
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -140,14 +182,7 @@ void ProcessInput() {
 				break;
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
-				case SDLK_SPACE:
-					if (!isGameStart) {
-						glm::vec3 left_pad_pos = glm::vec3(-5, 0, 0);
-						glm::vec3 right_pad_pos = glm::vec3(5, 0, 0);
-						ball_pos = glm::vec3(0, 0, 0);
-						isGameStart = true;
-					}
-					break;
+				
 				}
 				break;
 		}
@@ -155,130 +190,73 @@ void ProcessInput() {
 
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-	if (keys[SDL_SCANCODE_UP]) {
-		right_pad_mov.y = 1.0f;
+	if (keys[SDL_SCANCODE_LEFT]) {
+		state.player->acceleration.x = -1.0f;
 	}
-	else if (keys[SDL_SCANCODE_DOWN]) {
-		right_pad_mov.y = -1.0f;
+	else if (keys[SDL_SCANCODE_RIGHT]) {
+		state.player->acceleration.x = 1.0f;
 	}
-	if (keys[SDL_SCANCODE_W]) {
-		left_pad_mov.y = 1.0f;
-	}
-	else if (keys[SDL_SCANCODE_S]) {
-		left_pad_mov.y = -1.0f;
+	if (glm::length(state.player->movement) > 1.0f) {
+		state.player->acceleration = glm::normalize(state.player->acceleration);
 	}
 }
 
 
+#define FIXED_TIMESTEP 0.0166666f
+float lastTicks = 0;
+float accumulator = 0.0f;
 
-bool is_moving_left = true;
 void Update() {
 	float ticks = (float)SDL_GetTicks() / 1000.0f;
 	float deltaTime = ticks - lastTicks;
 	lastTicks = ticks;
 
-	
-
-	if (isGameStart) {
-		if (RightPadTouched()) {
-			ball_mov.x = -1;
-			if (ball_pos.y < right_pad_pos.y) {
-				ball_mov.y = -1;
-			}
-			else {
-				ball_mov.y = 1;
-			}
-		}
-		if (LeftPadTouched()) {
-			ball_mov.x = 1;
-			if (ball_pos.y < left_pad_pos.y) {
-				ball_mov.y = -1;
-			}
-			else {
-				ball_mov.y = 1;
-			}
-		}
-		if (UpBoundTouched()) {
-			ball_mov.y = -1;
-		}
-		if (BotBoundTouched()) {
-			ball_mov.y = 1;
-		}
-		if (RightBoundTouched() || LeftBoundTouched()) {
-			isGameStart = false;
-		}
-		if (glm::length(ball_mov) > 1.0f) {
-			ball_mov=glm::normalize(ball_mov);
-		}
-		ball_pos += ball_mov * ball_speed * deltaTime;
-		left_pad_pos += left_pad_mov * pad_speed * deltaTime;
-		if (left_pad_pos.y >= 3.75f || left_pad_pos.y <= -3.75f) {
-			left_pad_pos -= left_pad_mov * pad_speed * deltaTime;
-		}
-		right_pad_pos += right_pad_mov * pad_speed * deltaTime;
-		if (right_pad_pos.y >= 3.75f || right_pad_pos.y <= -3.75f) {
-			right_pad_pos -= right_pad_mov * pad_speed * deltaTime;
-		}
-
+	if (deltaTime < FIXED_TIMESTEP) {
+		accumulator = deltaTime;
+		return;
 	}
+
+	while (deltaTime >= FIXED_TIMESTEP) {
+		// Update. Notice it's FIXED_TIMESTEP. Not deltaTime
+		if (!state.gameEnd) {
+			state.player->Update(FIXED_TIMESTEP, state.platforms, PLATFORM_COUNT);
+			if (state.player->lastCollision == DESTINATION || state.player->lastCollision == GROUND) {
+				state.gameEnd = true;
+				state.player->velocity = glm::vec3(0, 0, 0);
+				if (state.player->collideGround) {
+					state.win = false;
+				}
+			}
+		}
+		
+
+		deltaTime -= FIXED_TIMESTEP;
+	}
+
+	accumulator = deltaTime;
+	
+
+	
+
 	
 	
-
-	
-
-	LeftPadModelMatrix = glm::mat4(1.0f);
-	LeftPadModelMatrix = glm::translate(LeftPadModelMatrix, left_pad_pos);
-	LeftPadModelMatrix = glm::rotate(LeftPadModelMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	RightPadModelMatrix = glm::mat4(1.0f);
-	RightPadModelMatrix = glm::translate(RightPadModelMatrix, right_pad_pos);
-	RightPadModelMatrix = glm::rotate(RightPadModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	BallModelMatrix = glm::mat4(1.0f);
-	BallModelMatrix = glm::translate(BallModelMatrix, ball_pos);
-	BallModelMatrix = glm::rotate(BallModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 }
 
 void Render() {
 	glClear(GL_COLOR_BUFFER_BIT);
-
-
-	float pad_vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float pad_texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-	float ball_vertices[] = { -0.25, -0.25, 0.25, -0.25, 0.25, 0.25, -0.25, -0.25, 0.25, 0.25, -0.25, 0.25 };
-	float ball_texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, pad_vertices);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, pad_texCoords);
-	glEnableVertexAttribArray(program.texCoordAttribute);
-
-	program.SetModelMatrix(LeftPadModelMatrix);
-	glBindTexture(GL_TEXTURE_2D, LeftPadTextureID);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	program.SetModelMatrix(RightPadModelMatrix);
-	glBindTexture(GL_TEXTURE_2D, RightPadTextureID);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glDisableVertexAttribArray(program.positionAttribute);
-	glDisableVertexAttribArray(program.texCoordAttribute);
-
-
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ball_vertices);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, ball_texCoords);
-	glEnableVertexAttribArray(program.texCoordAttribute);
-
-	program.SetModelMatrix(BallModelMatrix);
-	glBindTexture(GL_TEXTURE_2D, BallTextureID);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-	glDisableVertexAttribArray(program.positionAttribute);
-	glDisableVertexAttribArray(program.texCoordAttribute);
+	state.player->Render(&program);
+	for (int i = 0; i < PLATFORM_COUNT; i++) {
+		state.platforms[i].Render(&program);
+	}
+	if (state.gameEnd) {
+		if (state.win) {
+			DrawText(&program, fontTextureID, "Mission Successful", 0.5f, -0.25f, glm::vec3(-2, 0, 0));
+		}
+		else {
+			DrawText(&program, fontTextureID, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2, 0, 0));
+		}
+	}
 
 	SDL_GL_SwapWindow(displayWindow);
 }

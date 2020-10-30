@@ -12,7 +12,7 @@
 #include "ShaderProgram.h"
 
 
-enum EntityType{PlAYER, GROUND, DESTINATION};
+enum EntityType{PlAYER, GROUND, PLATFORM, ENEMY};
 
 class Entity {
 public:
@@ -45,6 +45,10 @@ public:
     int animCols = 0;
     int animRows = 0;
 
+    bool collidedTop = false;
+    bool collidedBottom = false;
+    bool collidedLeft = false;
+    bool collidedRight = false;
     Entity();
 
     bool CheckCollision(Entity* other);

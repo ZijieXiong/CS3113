@@ -8,6 +8,8 @@
 #include<vector>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <SDL_mixer.h>
+//https://www.libsdl.org/projects/SDL_mixer/docs/index.html
 #include "ShaderProgram.h"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -24,6 +26,9 @@ struct GameState {
 	Entity *platforms;
 	bool gameEnd = false;
 	bool win = true;
+	Mix_Music *bgm;
+	Mix_Chunk* gameover;
+	Mix_Chunk* fail;
 };
 
 GameState state;
@@ -110,22 +115,34 @@ GLuint LoadTexture(const char* filePath) {
 
 
 void Initialize() {
-	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("Project 2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	displayWindow = SDL_CreateWindow("Project 4", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 #ifdef _WINDOWS
 	glewInit();
 #endif
 	glViewport(0, 0, 640, 480);
 	SDL_Init(SDL_INIT_VIDEO);
 	program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
+
+	state.bgm = Mix_LoadMUS("crypto.mp3");
+	Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+	Mix_PlayMusic(state.bgm, -1);
+
+	state.gameover = Mix_LoadWAV("gameover.wav");
+	state.fail = Mix_LoadWAV("failure.wav");
+	Mix_Volume(-1, MIX_MAX_VOLUME / 2);
+	Mix_VolumeChunk(state.fail, MIX_MAX_VOLUME);
+
 	viewMatrix = glm::mat4(1.0f);
 	LeftPadModelMatrix = glm::mat4(1.0f);
 	BallModelMatrix = glm::mat4(1.0f);
 	RightPadModelMatrix = glm::mat4(1.0f);
 	projectionMatrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
+
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
 
@@ -135,35 +152,26 @@ void Initialize() {
 
 	state.player = new Entity();
 	state.player->entityType = PlAYER;
-	state.player->position = glm::vec3(0, 3.3, 0);
-	state.player->acceleration = glm::vec3(0, -0.1, 0);
+	state.player->position = glm::vec3(-4, -1.5, 0);
+	state.player->acceleration = glm::vec3(0, -3, 0);
 	state.player->velocity = glm::vec3(0, 0, 0);
 	state.player->textureID = LoadTexture("ctg.png");
 
 	state.platforms = new Entity[PLATFORM_COUNT];
-	state.platforms[0].position = glm::vec3(-4.5, -3.3, 0);
-	state.platforms[1].position = glm::vec3(-3.5, -3.3, 0);
-	state.platforms[2].position = glm::vec3(-2.5, -3.3, 0);
-	state.platforms[3].position = glm::vec3(-1.5, -3.3, 0);
-	state.platforms[4].position = glm::vec3(-0.5, -3.3, 0);
-	state.platforms[5].position = glm::vec3(0.5, -3.3, 0);
-	state.platforms[6].position = glm::vec3(1.5, -3.3, 0);
-	state.platforms[7].position = glm::vec3(2.5, -3.3, 0);
-	state.platforms[8].position = glm::vec3(3.5, -3.3, 0);
-	state.platforms[9].position = glm::vec3(4.5, -3.3, 0);
-	state.platforms[10].position = glm::vec3(1, 0, 0);
-	state.platforms[11].position = glm::vec3(2, 0, 0);
+	for (int i = 0; i < PLATFORM_COUNT - 2; i++) {
+		state.platforms[i].position = glm::vec3(-4.5 + i, -3.3, 0);
+	}
+	state.platforms[10].position = glm::vec3(1, -1.5, 0);
+	state.platforms[10].entityType = PLATFORM;
+	state.platforms[11].position = glm::vec3(2, -1.5, 0);
+	state.platforms[11].entityType = PLATFORM;
 	GLuint groundTextureID = LoadTexture("ground.png");
 	for (int i = 0; i < PLATFORM_COUNT; i++) {
 		state.platforms[i].entityType = GROUND;
 		state.platforms[i].textureID = groundTextureID;
 		state.platforms[i].Update(0);
 	}
-	GLuint destTextureID = LoadTexture("destination.png");
-	state.platforms[7].textureID = destTextureID;
-	state.platforms[7].entityType = DESTINATION;
-	state.platforms[8].textureID = destTextureID;
-	state.platforms[8].entityType = DESTINATION;
+	//GLuint destTextureID = LoadTexture("destination.png");
 	fontTextureID = LoadTexture("font1.png");
 
 	glEnable(GL_BLEND);
@@ -172,7 +180,7 @@ void Initialize() {
 }
 
 void ProcessInput() {
-	state.player->acceleration.x = 0;
+	state.player->velocity.x = 0;
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -191,10 +199,18 @@ void ProcessInput() {
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
 
 	if (keys[SDL_SCANCODE_LEFT]) {
-		state.player->acceleration.x = -1.0f;
+		state.player->velocity.x = -1.0f;
 	}
 	else if (keys[SDL_SCANCODE_RIGHT]) {
-		state.player->acceleration.x = 1.0f;
+		state.player->velocity.x = 1.0f;
+	}
+
+	if (keys[SDL_SCANCODE_SPACE]) {
+		if (state.player->collidedBottom) {
+			state.player->velocity.y = 3.5f;
+
+		}
+		
 	}
 }
 
@@ -204,11 +220,17 @@ float lastTicks = 0;
 float accumulator = 0.0f;
 
 void Update() {
+
+	bool collidedTop = false;
+	bool collidedBottom = false;
+	bool collidedLeft = false;
+	bool collidedRight = false;
+
 	float ticks = (float)SDL_GetTicks() / 1000.0f;
 	float deltaTime = ticks - lastTicks;
 	lastTicks = ticks;
-
 	deltaTime += accumulator;
+
 	if (deltaTime < FIXED_TIMESTEP) {
 		accumulator = deltaTime;
 		return;
@@ -218,26 +240,11 @@ void Update() {
 		// Update. Notice it's FIXED_TIMESTEP. Not deltaTime
 		if (!state.gameEnd) {
 			state.player->Update(FIXED_TIMESTEP, state.platforms, PLATFORM_COUNT);
-			if (state.player->lastCollision == DESTINATION || state.player->lastCollision == GROUND) {
-				state.gameEnd = true;
-				if (state.player->collideGround) {
-					state.win = false;
-				}
-			}
 		}
 		
 
 		deltaTime -= FIXED_TIMESTEP;
 	}
-
-	accumulator = deltaTime;
-	
-
-	
-
-	
-	
-
 }
 
 void Render() {
@@ -248,10 +255,10 @@ void Render() {
 	}
 	if (state.gameEnd) {
 		if (state.win) {
-			DrawText(&program, fontTextureID, "Mission Successful", 0.5f, -0.25f, glm::vec3(-2, 0, 0));
+			DrawText(&program, fontTextureID, "Mission Successful", 0.5f, -0.25f, glm::vec3(-1.5, 0, 0));
 		}
 		else {
-			DrawText(&program, fontTextureID, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2, 0, 0));
+			DrawText(&program, fontTextureID, "Mission Failed", 0.5f, -0.25f, glm::vec3(-1.5, 0, 0));
 		}
 	}
 
@@ -259,6 +266,9 @@ void Render() {
 }
 
 void Shutdown() {
+	Mix_FreeChunk(state.fail);
+	Mix_FreeChunk(state.gameover);
+	Mix_FreeMusic(state.bgm);
 	SDL_Quit();
 }
 

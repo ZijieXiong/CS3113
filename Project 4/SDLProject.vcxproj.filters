@@ -58,4 +58,24 @@
       <Filter>Source Files</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <Media Include="crypto.mp3">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="bounce.wav">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="dooblydoo.mp3">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="gameover.wav">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="success.wav">
+      <Filter>Source Files</Filter>
+    </Media>
+    <Media Include="failure.wav">
+      <Filter>Source Files</Filter>
+    </Media>
+  </ItemGroup>
 </Project>

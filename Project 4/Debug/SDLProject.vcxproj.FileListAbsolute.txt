@@ -6,3 +6,5 @@ C:\Users\xiong\Documents\CS3113\Project 2\Debug\SDLProject.exe
 C:\Users\xiong\Documents\CS3113\Project 2\Debug\SDLProject.pdb
 C:\Users\xiong\Documents\CS3113\Project 3\Debug\SDLProject.exe
 C:\Users\xiong\Documents\CS3113\Project 3\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.pdb

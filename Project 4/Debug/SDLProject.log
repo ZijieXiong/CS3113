@@ -1,4 +1,2 @@
-﻿  main.cpp
-C:\Users\xiong\Documents\CS3113\Project 3\main.cpp(48,20): warning C4018: “<”: 有符号/无符号不匹配
-C:\Users\xiong\Documents\CS3113\Project 3\main.cpp(186,5): warning C4060: switch 语句没有包含“case”或“default”标签
-  SDLProject.vcxproj -> C:\Users\xiong\Documents\CS3113\Project 3\Debug\SDLProject.exe
+﻿  Entity.cpp
+  SDLProject.vcxproj -> C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.exe

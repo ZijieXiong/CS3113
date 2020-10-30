@@ -39,8 +39,9 @@ float lastTicks = 0;
 bool isGameStart = false;
 float pad_width = 1.0f;
 float pad_height = 1.0f;
-float ball_width = 0.5f;
-float ball_height = 0.5f;
+float ball_width = 1.0f;
+float ball_height = 1.0f;
+
 
 bool LeftPadTouched() {
 	float x = fabs(left_pad_pos.x - ball_pos.x) - ((pad_width + ball_width) / 2.0f);
@@ -127,7 +128,7 @@ void Initialize() {
 }
 
 void ProcessInput() {
-
+	
 	left_pad_mov = glm::vec3(0, 0, 0);
 	right_pad_mov = glm::vec3(0, 0, 0);
 
@@ -235,6 +236,7 @@ void Update() {
 	RightPadModelMatrix = glm::rotate(RightPadModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 	BallModelMatrix = glm::mat4(1.0f);
+	BallModelMatrix = glm::scale(BallModelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
 	BallModelMatrix = glm::translate(BallModelMatrix, ball_pos);
 	BallModelMatrix = glm::rotate(BallModelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 

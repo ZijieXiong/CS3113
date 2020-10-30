@@ -111,7 +111,7 @@ GLuint LoadTexture(const char* filePath) {
 
 void Initialize() {
 	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("Project 2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+	displayWindow = SDL_CreateWindow("Project 3", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 
@@ -196,9 +196,6 @@ void ProcessInput() {
 	else if (keys[SDL_SCANCODE_RIGHT]) {
 		state.player->acceleration.x = 1.0f;
 	}
-	if (glm::length(state.player->movement) > 1.0f) {
-		state.player->acceleration = glm::normalize(state.player->acceleration);
-	}
 }
 
 
@@ -211,6 +208,7 @@ void Update() {
 	float deltaTime = ticks - lastTicks;
 	lastTicks = ticks;
 
+	deltaTime += accumulator;
 	if (deltaTime < FIXED_TIMESTEP) {
 		accumulator = deltaTime;
 		return;
@@ -222,7 +220,6 @@ void Update() {
 			state.player->Update(FIXED_TIMESTEP, state.platforms, PLATFORM_COUNT);
 			if (state.player->lastCollision == DESTINATION || state.player->lastCollision == GROUND) {
 				state.gameEnd = true;
-				state.player->velocity = glm::vec3(0, 0, 0);
 				if (state.player->collideGround) {
 					state.win = false;
 				}

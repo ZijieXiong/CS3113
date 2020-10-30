@@ -78,9 +78,6 @@ void Entity::CheckCollisionsX(Entity* objects, int objectCount)
 
 void Entity::Update(float deltaTime)
 {   
-    if (entityType == PLATFORM) {
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 0.5f, 1.0f));
-    }
     collidedTop = false;
     collidedBottom = false;
     collidedLeft = false;
@@ -102,10 +99,12 @@ void Entity::Update(float deltaTime)
         }
     }
 
-     velocity += acceleration * deltaTime;
-     position += velocity * deltaTime;
-
+    velocity += acceleration * deltaTime;
+    position += velocity * deltaTime;
     modelMatrix = glm::mat4(1.0f);
+    //if (entityType == PLATFORM) {
+       // modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 0.5f, 1.0f));
+    //}
     modelMatrix = glm::translate(modelMatrix, position);
 }
 
@@ -115,7 +114,6 @@ void Entity::Update(float deltaTime, Entity* platforms, int platformCount)
     collidedBottom = false;
     collidedLeft = false;
     collidedRight = false;
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.0f, 2.0f, 1.0f));
     if (animIndices != NULL) {
         if (glm::length(movement) != 0) {
             animTime += deltaTime;

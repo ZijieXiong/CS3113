@@ -57,6 +57,9 @@
     <Image Include="font1.png">
       <Filter>Source Files</Filter>
     </Image>
+    <Image Include="enemy.png">
+      <Filter>Source Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Media Include="crypto.mp3">

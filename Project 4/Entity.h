@@ -26,8 +26,8 @@ public:
     glm::vec3 velocity;
     float speed;
 
-    int width = 1;
-    int height = 1;
+    float width = 1.0f;
+    float height = 1.0f;
     
     GLuint textureID;
 

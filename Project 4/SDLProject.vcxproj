@@ -142,6 +142,7 @@
   <ItemGroup>
     <Image Include="ctg.png" />
     <Image Include="destination.png" />
+    <Image Include="enemy.png" />
     <Image Include="font1.png" />
     <Image Include="ground.png" />
     <Image Include="ham.png" />

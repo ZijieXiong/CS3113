@@ -19,13 +19,17 @@
 #include "stb_image.h"
 #include "Entity.h"
 #define PLATFORM_COUNT 12
+#define ENEMY_COUNT 3
+
 
 
 struct GameState {
 	Entity *player;
 	Entity *platforms;
+	Entity *enemies;
 	bool gameEnd = false;
 	bool win = true;
+	
 	Mix_Music *bgm;
 	Mix_Chunk* gameover;
 	Mix_Chunk* fail;
@@ -160,18 +164,27 @@ void Initialize() {
 	state.platforms = new Entity[PLATFORM_COUNT];
 	for (int i = 0; i < PLATFORM_COUNT - 2; i++) {
 		state.platforms[i].position = glm::vec3(-4.5 + i, -3.3, 0);
+		state.platforms[i].entityType = GROUND;
 	}
 	state.platforms[10].position = glm::vec3(1, -1.5, 0);
 	state.platforms[10].entityType = PLATFORM;
+	state.platforms[10].height = 0.5f;
+	state.platforms[11].height = 0.5f;
 	state.platforms[11].position = glm::vec3(2, -1.5, 0);
 	state.platforms[11].entityType = PLATFORM;
 	GLuint groundTextureID = LoadTexture("ground.png");
 	for (int i = 0; i < PLATFORM_COUNT; i++) {
-		state.platforms[i].entityType = GROUND;
 		state.platforms[i].textureID = groundTextureID;
 		state.platforms[i].Update(0);
 	}
-	//GLuint destTextureID = LoadTexture("destination.png");
+
+	state.enemies = new Entity[ENEMY_COUNT];
+	GLuint enemyTextureID = LoadTexture("enemy.png");
+	for (int i = 0; i < ENEMY_COUNT; i++) {
+		state.enemies[i].entityType = ENEMY;
+		state.enemies[i].textureID = enemyTextureID;
+		state.platforms[i].Update(0);
+	}
 	fontTextureID = LoadTexture("font1.png");
 
 	glEnable(GL_BLEND);

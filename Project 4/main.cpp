@@ -27,12 +27,14 @@ struct GameState {
 	Entity *player;
 	Entity *platforms;
 	Entity *enemies;
+	Entity *enemy;
 	bool gameEnd = false;
-	bool win = true;
+	bool win = false;
 	
 	Mix_Music *bgm;
 	Mix_Chunk* gameover;
 	Mix_Chunk* fail;
+	Mix_Chunk* hit;
 };
 
 GameState state;
@@ -138,6 +140,7 @@ void Initialize() {
 
 	state.gameover = Mix_LoadWAV("gameover.wav");
 	state.fail = Mix_LoadWAV("failure.wav");
+	state.hit = Mix_LoadWAV("bounce.wav");
 	Mix_Volume(-1, MIX_MAX_VOLUME / 2);
 	Mix_VolumeChunk(state.fail, MIX_MAX_VOLUME);
 
@@ -155,9 +158,9 @@ void Initialize() {
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 	state.player = new Entity();
-	state.player->entityType = PlAYER;
-	state.player->position = glm::vec3(-4, -1.5, 0);
-	state.player->acceleration = glm::vec3(0, -3, 0);
+	state.player->entityType = PLAYER;
+	state.player->position = glm::vec3(-4, -2.3, 0);
+	state.player->acceleration = glm::vec3(0, -5, 0);
 	state.player->velocity = glm::vec3(0, 0, 0);
 	state.player->textureID = LoadTexture("ctg.png");
 
@@ -166,25 +169,37 @@ void Initialize() {
 		state.platforms[i].position = glm::vec3(-4.5 + i, -3.3, 0);
 		state.platforms[i].entityType = GROUND;
 	}
-	state.platforms[10].position = glm::vec3(1, -1.5, 0);
+	state.platforms[10].position = glm::vec3(1, -1.2, 0);
 	state.platforms[10].entityType = PLATFORM;
-	state.platforms[10].height = 0.5f;
-	state.platforms[11].height = 0.5f;
-	state.platforms[11].position = glm::vec3(2, -1.5, 0);
+	state.platforms[11].position = glm::vec3(2, -1.2, 0);
 	state.platforms[11].entityType = PLATFORM;
 	GLuint groundTextureID = LoadTexture("ground.png");
 	for (int i = 0; i < PLATFORM_COUNT; i++) {
 		state.platforms[i].textureID = groundTextureID;
-		state.platforms[i].Update(0);
+		state.platforms[i].Update(0, NULL, 0, NULL, NULL, 0);
 	}
 
+
 	state.enemies = new Entity[ENEMY_COUNT];
-	GLuint enemyTextureID = LoadTexture("enemy.png");
+	GLint enemyTextureID = LoadTexture("enemy.png");
 	for (int i = 0; i < ENEMY_COUNT; i++) {
-		state.enemies[i].entityType = ENEMY;
 		state.enemies[i].textureID = enemyTextureID;
-		state.platforms[i].Update(0);
+		state.enemies[i].entityType = ENEMY;
+		state.enemies[i].acceleration = glm::vec3(0,-5,0);
+		state.enemies[i].width = 0.3;
+		state.enemies[i].height = 0.8;
 	}
+	state.enemies[0].position = glm::vec3(1, -2.3, 0);
+	state.enemies[0].aiType = WALKER;
+	state.enemies[0].aiState = WALKING;
+	state.enemies[1].position = glm::vec3(0, -2.3, 0);
+	state.enemies[1].aiType = WAITANDGO;
+	state.enemies[1].aiState = IDLE;
+	state.enemies[2].position = glm::vec3(1 , 0, 0);
+	state.enemies[2].aiType = WALKERONPF;
+	state.enemies[2].aiState = IDLE;
+
+
 	fontTextureID = LoadTexture("font1.png");
 
 	glEnable(GL_BLEND);
@@ -203,9 +218,21 @@ void ProcessInput() {
 				break;
 			case SDL_KEYDOWN:
 				switch (event.key.keysym.sym) {
-				
+				case SDLK_SPACE:
+					if (state.player->collidedBottom && !(state.player->isJumping)) {
+						state.player->isJumping = true;
+						state.player->velocity.y = state.player->jumpPower;
+						state.player->acceleration.y = -3;
+					}
 				}
 				break;
+			case SDL_KEYUP:
+				switch (event.key.keysym.sym) {
+					case SDLK_SPACE:
+ 						state.player->acceleration.y = -5;
+						state.player->isJumping = false;
+						break;	
+				}
 		}
 	}
 
@@ -219,12 +246,21 @@ void ProcessInput() {
 	}
 
 	if (keys[SDL_SCANCODE_SPACE]) {
-		if (state.player->collidedBottom) {
-			state.player->velocity.y = 3.5f;
-
+		if (state.player->isJumping) {
+			
+			state.player->isJumping = true;
 		}
 		
 	}
+}
+
+bool win() {
+	for (int i = 0; i < ENEMY_COUNT; i++) {
+		if (state.enemies[i].isactive) {
+			return false;
+		}
+	}
+	return true;
 }
 
 
@@ -252,7 +288,22 @@ void Update() {
 	while (deltaTime >= FIXED_TIMESTEP) {
 		// Update. Notice it's FIXED_TIMESTEP. Not deltaTime
 		if (!state.gameEnd) {
-			state.player->Update(FIXED_TIMESTEP, state.platforms, PLATFORM_COUNT);
+			state.player->Update(FIXED_TIMESTEP, state.platforms, PLATFORM_COUNT, state.player, state.enemies, ENEMY_COUNT);
+			for (int i = 0; i < ENEMY_COUNT; i++) {
+				state.enemies[i].Update(FIXED_TIMESTEP,state.platforms, PLATFORM_COUNT, state.player, NULL, 0);
+			}
+			if (state.player->lastCollision == ENEMY) {
+				Mix_PlayChannel(-1, state.hit, 0);
+			}
+			if (state.player->isDead) {
+				state.gameEnd=true;
+				Mix_PlayChannel(-1, state.fail, 0);
+			}
+			if (win()) {
+				state.gameEnd = true;
+				state.win = true;
+				Mix_PlayChannel(-1, state.gameover, 0);
+			}
 		}
 		
 
@@ -266,12 +317,16 @@ void Render() {
 	for (int i = 0; i < PLATFORM_COUNT; i++) {
 		state.platforms[i].Render(&program);
 	}
+	//state.enemy->Render(&program);
+	for (int i = 0; i < ENEMY_COUNT; i++) {
+		state.enemies[i].Render(&program);
+	}
 	if (state.gameEnd) {
 		if (state.win) {
-			DrawText(&program, fontTextureID, "Mission Successful", 0.5f, -0.25f, glm::vec3(-1.5, 0, 0));
+			DrawText(&program, fontTextureID, "You Win", 0.5f, -0.25f, glm::vec3(-0.5, 0, 0));
 		}
 		else {
-			DrawText(&program, fontTextureID, "Mission Failed", 0.5f, -0.25f, glm::vec3(-1.5, 0, 0));
+			DrawText(&program, fontTextureID, "You Lose", 0.5f, -0.25f, glm::vec3(-0.5, 0, 0));
 		}
 	}
 
@@ -281,6 +336,7 @@ void Render() {
 void Shutdown() {
 	Mix_FreeChunk(state.fail);
 	Mix_FreeChunk(state.gameover);
+	Mix_FreeChunk(state.hit);
 	Mix_FreeMusic(state.bgm);
 	SDL_Quit();
 }

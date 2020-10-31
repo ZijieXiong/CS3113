@@ -45,9 +45,6 @@
     <Image Include="ctg.png">
       <Filter>Source Files</Filter>
     </Image>
-    <Image Include="ham.png">
-      <Filter>Source Files</Filter>
-    </Image>
     <Image Include="destination.png">
       <Filter>Source Files</Filter>
     </Image>

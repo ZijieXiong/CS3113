@@ -12,23 +12,26 @@
 #include "ShaderProgram.h"
 
 
-enum EntityType{PlAYER, GROUND, PLATFORM, ENEMY};
+enum EntityType{PLAYER, GROUND, PLATFORM, ENEMY};
+enum AIType { WALKER, WAITANDGO, WALKERONPF};
+enum AIState {IDLE, WALKING, RUNNING};
 
 class Entity {
 public:
     EntityType entityType;
     EntityType lastCollision;
+    AIType aiType;
+    AIState aiState;
     bool collideGround = false;
 
     glm::vec3 position;
     glm::vec3 movement;
     glm::vec3 acceleration;
     glm::vec3 velocity;
-    float speed;
 
     float width = 1.0f;
     float height = 1.0f;
-    
+    float jumpPower =4.0f;
     GLuint textureID;
 
     glm::mat4 modelMatrix;
@@ -45,17 +48,27 @@ public:
     int animCols = 0;
     int animRows = 0;
 
+    bool isactive = true;
+    bool init = true;
     bool collidedTop = false;
     bool collidedBottom = false;
     bool collidedLeft = false;
     bool collidedRight = false;
+    bool isJumping = false;
+    bool isDead = false;
     Entity();
 
+    bool PointToBoxCollision(float x, float y, Entity* other);
+    bool CheckEdge(float x, float y, Entity* objects, int objectCount);
     bool CheckCollision(Entity* other);
     void CheckCollisionsX(Entity* objects, int objectCount);
     void CheckCollisionsY(Entity* objects, int objectCount);
-    void Update(float deltaTime);
-    void Update(float deltaTime, Entity* platforms, int platformCount);
+    void Update(float deltaTime, Entity* platforms, int platformCount, Entity* player, Entity *enemies, int enemyCount);
     void Render(ShaderProgram* program);
     void DrawSpriteFromTextureAtlas(ShaderProgram* program, GLuint textureID, int index);
+    
+    void AI(Entity* player, Entity* platforms, int platformCount);
+    void AIWalker();
+    void AIWaitAndGo(Entity *player);
+    void AIWalkerOnPF(Entity *player, Entity *platforms, int platformCount);
 };

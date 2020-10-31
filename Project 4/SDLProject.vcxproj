@@ -145,7 +145,6 @@
     <Image Include="enemy.png" />
     <Image Include="font1.png" />
     <Image Include="ground.png" />
-    <Image Include="ham.png" />
   </ItemGroup>
   <ItemGroup>
     <Media Include="bounce.wav" />

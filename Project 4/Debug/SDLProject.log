@@ -1,6 +1,5 @@
-﻿  Entity.cpp
-  main.cpp
-C:\Users\xiong\Documents\CS3113\Project 4\main.cpp(57,20): warning C4018: “<”: 有符号/无符号不匹配
-C:\Users\xiong\Documents\CS3113\Project 4\main.cpp(208,5): warning C4060: switch 语句没有包含“case”或“default”标签
-  正在生成代码...
+﻿  main.cpp
+C:\Users\xiong\Documents\CS3113\Project 4\main.cpp(59,20): warning C4018: “<”: 有符号/无符号不匹配
+C:\Users\xiong\Documents\CS3113\Project 4\main.cpp(189,31): warning C4305: “=”: 从“double”到“float”截断
+C:\Users\xiong\Documents\CS3113\Project 4\main.cpp(190,32): warning C4305: “=”: 从“double”到“float”截断
   SDLProject.vcxproj -> C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.exe

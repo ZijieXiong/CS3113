@@ -162,6 +162,7 @@ void Initialize() {
 	state.player->position = glm::vec3(-4, -2.3, 0);
 	state.player->acceleration = glm::vec3(0, -5, 0);
 	state.player->velocity = glm::vec3(0, 0, 0);
+	state.player->width = 0.9f;
 	state.player->textureID = LoadTexture("ctg.png");
 
 	state.platforms = new Entity[PLATFORM_COUNT];
@@ -186,7 +187,7 @@ void Initialize() {
 		state.enemies[i].textureID = enemyTextureID;
 		state.enemies[i].entityType = ENEMY;
 		state.enemies[i].acceleration = glm::vec3(0,-5,0);
-		state.enemies[i].width = 0.3;
+		state.enemies[i].width = 0.5;
 		state.enemies[i].height = 0.8;
 	}
 	state.enemies[0].position = glm::vec3(1, -2.3, 0);

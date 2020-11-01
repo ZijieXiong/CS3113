@@ -139,6 +139,10 @@ void Entity::AIWaitAndGo(Entity *player) {
             else {
                 velocity.x = 0;
             }
+            if (position.x < -3.7 || position.x>3.7) {
+                velocity.x = -velocity.x;
+            }
+
             break;
     }
 }
@@ -147,20 +151,31 @@ void Entity::AIWaitAndGo(Entity *player) {
 void Entity::AIWalkerOnPF(Entity* player, Entity* platforms, int platformCount) {
     Entity* platform1 = &platforms[10];
     Entity* platform2 = &platforms[11];
-    float left_x = position.x - width / 2.0f;
-    float right_x = position.x + width / 2.0f;
-    float y = position.y - height / 2.0f;
+    float left_x = position.x - width / 2.0f + 0.1f;
+    float right_x = position.x + width / 2.0f - 0.1f;
+    float y = position.y - height / 2.0f - 0.1f;
     switch (aiState){
         case IDLE:
             if (init) {
                 velocity.x = -1;
                 init = false;
             }
-
-            //if (!PointToBoxCollision(left_x, y, platform1) || !PointToBoxCollision(right_x,y,platform2)) {
-            if(!CheckEdge(left_x, y, platforms, platformCount) || !CheckEdge(right_x, y, platforms, platformCount)){
-                velocity.x = -velocity.x;
+            if (isTurning) {
+                if (CheckEdge(left_x, y, platforms, platformCount) && CheckEdge(right_x, y, platforms, platformCount)) {
+                    isTurning = false;
+                }
             }
+            else {
+                if (!CheckEdge(left_x, y, platforms, platformCount)) {
+                    velocity.x = -velocity.x;
+                    isTurning = true;
+                }
+                else if (!CheckEdge(right_x, y, platforms, platformCount)) {
+                    velocity.x = -velocity.x;
+                    isTurning = true;
+                }
+            }
+            
             if (glm::distance(position, player->position) < 3.0f) {
                 aiState = RUNNING;
             }
@@ -173,12 +188,12 @@ void Entity::AIWalkerOnPF(Entity* player, Entity* platforms, int platformCount) 
             else if (position.x > player->position.x) {
                 velocity.x = 0.7;
             }
-            else {
-                velocity.x = 0;
-            }
-            if (position.x < -4 || position.x>4) {
-                aiState = IDLE;
+            if (position.x < -4.8 || position.x>4.8) {
+                velocity.x = -velocity.x;
             }  
+            if (glm::distance(position, player->position) > 3.0f) {
+                aiState = IDLE;
+            }
             break;
     }
       
@@ -239,7 +254,7 @@ void Entity::Update(float deltaTime, Entity* platforms, int platformCount, Entit
     CheckCollisionsX(platforms, platformCount);// Fix if needed
 
     CheckCollisionsX(enemies, enemyCount);
-
+    
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, position);
     if (entityType == PLATFORM) {

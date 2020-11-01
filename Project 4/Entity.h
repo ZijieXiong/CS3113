@@ -56,6 +56,7 @@ public:
     bool collidedRight = false;
     bool isJumping = false;
     bool isDead = false;
+    bool isTurning = false;
     Entity();
 
     bool PointToBoxCollision(float x, float y, Entity* other);

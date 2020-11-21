@@ -1,0 +1,12 @@
+C:\Users\xiong\Downloads\CS3113-master\CS3113-master\Templates\VisualStudioSDLProject\SDLProject\Debug\SDLProject.exe
+C:\Users\xiong\Downloads\CS3113-master\CS3113-master\Templates\VisualStudioSDLProject\SDLProject\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 1\Project1\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 1\Project1\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 2\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 2\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 3\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 3\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 4\Debug\SDLProject.pdb
+C:\Users\xiong\Documents\CS3113\Project 5\Debug\SDLProject.exe
+C:\Users\xiong\Documents\CS3113\Project 5\Debug\SDLProject.pdb

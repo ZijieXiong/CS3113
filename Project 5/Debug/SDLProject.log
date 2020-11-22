@@ -1,27 +1,22 @@
 ﻿  Entity.cpp
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(134,33): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(240,33): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float
           ]
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(137,34): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(243,34): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float
           ]
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(186,34): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(289,34): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float
           ]
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(189,33): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(292,33): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float
           ]
-  main.cpp
-C:\Users\xiong\Documents\CS3113\Project 5\main.cpp(59,20): warning C4018: “<”: 有符号/无符号不匹配
-C:\Users\xiong\Documents\CS3113\Project 5\main.cpp(191,32): warning C4305: “=”: 从“double”到“float”截断
-  ShaderProgram.cpp
-  正在生成代码...
   SDLProject.vcxproj -> C:\Users\xiong\Documents\CS3113\Project 5\Debug\SDLProject.exe

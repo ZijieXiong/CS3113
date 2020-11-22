@@ -1,3 +1,4 @@
+#pragma once
 #define GL_SILENCE_DEPRECATION
 
 #ifdef _WINDOWS
@@ -10,9 +11,9 @@
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "ShaderProgram.h"
+#include "Map.h"
 
-
-enum EntityType{PLAYER, GROUND, PLATFORM, ENEMY};
+enum EntityType{PLAYER, TILE, ENEMY};
 enum AIType { WALKER, WAITANDGO, WALKERONPF};
 enum AIState {IDLE, WALKING, RUNNING};
 
@@ -48,6 +49,7 @@ public:
     int animCols = 0;
     int animRows = 0;
 
+
     bool isactive = true;
     bool init = true;
     bool collidedTop = false;
@@ -57,19 +59,22 @@ public:
     bool isJumping = false;
     bool isDead = false;
     bool isTurning = false;
+    int life;
     Entity();
 
     bool PointToBoxCollision(float x, float y, Entity* other);
-    bool CheckEdge(float x, float y, Entity* objects, int objectCount);
+    bool CheckEdge(Map* map);
     bool CheckCollision(Entity* other);
     void CheckCollisionsX(Entity* objects, int objectCount);
     void CheckCollisionsY(Entity* objects, int objectCount);
-    void Update(float deltaTime, Entity* platforms, int platformCount, Entity* player, Entity *enemies, int enemyCount);
+    void Update(float deltaTime, Map* map, Entity* player, Entity *enemies, int enemyCount);
     void Render(ShaderProgram* program);
     void DrawSpriteFromTextureAtlas(ShaderProgram* program, GLuint textureID, int index);
-    
-    void AI(Entity* player, Entity* platforms, int platformCount);
-    void AIWalker();
+    void CheckCollisionsX(Map* map);
+    void CheckCollisionsY(Map* map);
+    void AI(Entity* player, Map* map);
+    void AIWalker(Map* map);
     void AIWaitAndGo(Entity *player);
-    void AIWalkerOnPF(Entity *player, Entity *platforms, int platformCount);
+    void AIWalkerOnPF(Entity* player, Map* map);
+    bool AI_CheckCollisionX(Map* map);
 };

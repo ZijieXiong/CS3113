@@ -9,12 +9,12 @@ C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(243,34): warning C4305: “
           [
               T=float
           ]
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(289,34): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(287,34): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float
           ]
-C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(292,33): warning C4305: “=”: 从“double”到“T”截断
+C:\Users\xiong\Documents\CS3113\Project 5\Entity.cpp(290,33): warning C4305: “=”: 从“double”到“T”截断
           with
           [
               T=float

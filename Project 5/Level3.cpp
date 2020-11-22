@@ -20,7 +20,7 @@ unsigned int level3_data[] =
 
 
 void Level3::Initialize() {
-
+	state.nextScene = -1;
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
 	state.bgm = Mix_LoadMUS("crypto.mp3");
@@ -39,7 +39,7 @@ void Level3::Initialize() {
 	state.player->position = glm::vec3(5, -1, 0);
 	state.player->acceleration = glm::vec3(0, -5, 0);
 	state.player->velocity = glm::vec3(0, 0, 0);
-	state.player->width = 1.0f;
+	state.player->width = 0.9;
 	state.player->textureID = Util::LoadTexture("ctg.png");
 
 
@@ -51,7 +51,6 @@ void Level3::Initialize() {
 		state.enemies[i].acceleration = glm::vec3(0, -5, 0);
 		state.enemies[i].width = 0.6;
 		state.enemies[i].height = 0.8;
-		state.enemies[i].velocity.x = -1;
 	}
 	state.enemies[0].position = glm::vec3(9, -2.3, 0);
 	state.enemies[0].aiType = WALKER;
@@ -117,11 +116,22 @@ void Level3::Render(ShaderProgram* program) {
 		state.enemies[i].Render(program);
 	}
 	if (state.gameEnd) {
-		if (state.win) {
-			Util::DrawText(program, fontTextureID, "You Win", 0.5f, -0.25f, glm::vec3(-0.5 + state.player->position.x, -3.75, 0));
+		glm::vec3 showLife = glm::vec3(0, 0, 0);
+		if (state.player->position.x < 5) {
+			showLife = glm::vec3(4.4, -3.75, 0);
+
+		}
+		else if (state.player->position.x > 8) {
+			showLife = glm::vec3(7.4, -3.75, 0);
 		}
 		else {
-			Util::DrawText(program, fontTextureID, "You Lose", 0.5f, -0.25f, glm::vec3(-0.5 + state.player->position.x, -3.75, 0));
+			showLife = glm::vec3(state.player->position.x-0.4 , -3.75, 0);
+		}
+		if (state.win) {
+			Util::DrawText(program, fontTextureID, "You Win", 0.5f, -0.25f, showLife);
+		}
+		else {
+			Util::DrawText(program, fontTextureID, "You Lose", 0.5f, -0.25f, showLife);
 		}
 	}
 }

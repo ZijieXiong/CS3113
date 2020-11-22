@@ -15,22 +15,6 @@ bool Entity::PointToBoxCollision(float x, float y, Entity* other) {
         y >= other->position.y - other->height/2.0f);
 }
 
-bool Entity::CheckEdge(Map* map) {
-    glm::vec3 bottom = glm::vec3(position.x, position.y - (height / 2), position.z);
-    glm::vec3 bottom_left = glm::vec3(position.x - (width / 2)-0.2, position.y - (height / 2) - 0.2, position.z);
-    glm::vec3 bottom_right = glm::vec3(position.x + (width / 2) + 0.2, position.y - (height / 2) + 0.2, position.z);
-    float penetration_x = 0;
-    float penetration_y = 0;
-    if (map->IsSolid(bottom_left, &penetration_x, &penetration_y) && velocity.y < 0) {
-        collidedBottom = true;
-        return true;
-    }
-    else if (map->IsSolid(bottom_right, &penetration_x, &penetration_y) && velocity.y < 0) {
-        collidedBottom = true;
-        return true;
-    }
-    return false;
-}
 
 bool Entity::CheckCollision(Entity* other) {
     float xdist = fabs(position.x - other->position.x) - ((width + other->width) / 2.0f);
@@ -209,6 +193,22 @@ bool Entity::AI_CheckCollisionX(Map* map) {
 
 }
 
+bool Entity::AI_CheckCollisionY(Map* map) {
+
+    glm::vec3 bottom = glm::vec3(position.x, position.y - (height / 2), position.z);
+    glm::vec3 bottom_left = glm::vec3(position.x - (width / 2) - 0.1, position.y - (height / 2) - 0.1, position.z);
+    glm::vec3 bottom_right = glm::vec3(position.x + (width / 2) + 0.1, position.y - (height / 2) - 0.1, position.z);
+
+    float penetration_x = 0;
+    float penetration_y = 0;
+    if (!map->IsSolid(bottom_left, &penetration_x, &penetration_y) || !map->IsSolid(bottom_right, &penetration_x, &penetration_y)) {
+        return false;
+    }
+    else {
+        return true;
+    }
+}
+
 
 
 void Entity::AIWalker(Map* map) {
@@ -252,36 +252,34 @@ void Entity::AIWaitAndGo(Entity *player) {
 
 
 void Entity::AIWalkerOnPF(Entity* player, Map* map) {
-    float left_x = position.x - width / 2.0f + 0.1f;
-    float right_x = position.x + width / 2.0f - 0.1f;
-    float y = position.y - height / 2.0f - 0.1f;
-    float penetration_x = 0;
-    float penetration_y = 0;
     switch (aiState){
         case IDLE:
-            
-            if (CheckEdge(map)) {
-                velocity.x = -velocity.x;
-            }
-            glm::vec3 left = glm::vec3(position.x - (width / 2), position.y, position.z);
-            glm::vec3 right = glm::vec3(position.x + (width / 2), position.y, position.z);
-
-            
-            if (map->IsSolid(left, &penetration_x, &penetration_y) && velocity.x < 0) {
-                collidedLeft = true;
-                lastCollision = TILE;
-                velocity.x = -velocity.x;
+            if (init) {
+                velocity.x = -1;
+                init = false;
             }
 
-            if (map->IsSolid(right, &penetration_x, &penetration_y) && velocity.x > 0) {
-                collidedRight = true;
-                lastCollision = TILE;
-                velocity.x = -velocity.x;
-            }
-
-            if (glm::distance(position, player->position) < 3.0f) {
+            if (glm::distance(position, player->position) < 2.0f) {
                 aiState = RUNNING;
             }
+
+            if (isTurning) {
+                if (AI_CheckCollisionY(map)) {
+                    isTurning = false;
+                }
+            }
+            else {
+                if (!AI_CheckCollisionY(map)) {
+                    velocity.x = -velocity.x;
+                    isTurning = true;
+                }
+            }
+            
+            if (AI_CheckCollisionX(map)) {
+                velocity.x = -velocity.x;
+            }
+
+
             break;
 
         case RUNNING:
@@ -291,10 +289,7 @@ void Entity::AIWalkerOnPF(Entity* player, Map* map) {
             else if (position.x > player->position.x) {
                 velocity.x = 0.7;
             }
-            if (position.x < -4.8 || position.x>4.8) {
-                velocity.x = -velocity.x;
-            }  
-            if (glm::distance(position, player->position) > 3.0f) {
+            if (glm::distance(position, player->position) > 2.0f) {
                 aiState = IDLE;
             }
             break;

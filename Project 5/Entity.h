@@ -63,7 +63,6 @@ public:
     Entity();
 
     bool PointToBoxCollision(float x, float y, Entity* other);
-    bool CheckEdge(Map* map);
     bool CheckCollision(Entity* other);
     void CheckCollisionsX(Entity* objects, int objectCount);
     void CheckCollisionsY(Entity* objects, int objectCount);
@@ -77,4 +76,5 @@ public:
     void AIWaitAndGo(Entity *player);
     void AIWalkerOnPF(Entity* player, Map* map);
     bool AI_CheckCollisionX(Map* map);
+    bool AI_CheckCollisionY(Map* map);
 };

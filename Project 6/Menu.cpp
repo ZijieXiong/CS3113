@@ -15,7 +15,8 @@ void Menu::Initialize() {
 
 	state.gameover = Mix_LoadWAV("gameover.wav");
 	state.fail = Mix_LoadWAV("failure.wav");
-	state.hit = Mix_LoadWAV("bounce.wav");
+	state.hit = Mix_LoadWAV("scream.wav");
+	state.shoot = Mix_LoadWAV("shoot.wav");
 	Mix_VolumeMusic(MIX_MAX_VOLUME / 16);
 	Mix_VolumeChunk(state.fail, MIX_MAX_VOLUME);
 

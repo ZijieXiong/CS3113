@@ -1,0 +1,5 @@
+﻿  Level4.cpp
+C:\Users\xiong\Documents\CS3113\Project 6\Level4.cpp(50,27): warning C4305: “=”: 从“double”到“float”截断
+C:\Users\xiong\Documents\CS3113\Project 6\Level4.cpp(60,31): warning C4305: “=”: 从“double”到“float”截断
+C:\Users\xiong\Documents\CS3113\Project 6\Level4.cpp(61,32): warning C4305: “=”: 从“double”到“float”截断
+  SDLProject.vcxproj -> C:\Users\xiong\Documents\CS3113\Project 6\Debug\SDLProject.exe
